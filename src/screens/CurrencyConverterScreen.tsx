@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  FlatList,
   Pressable,
   StyleSheet,
   Text,
@@ -15,6 +16,8 @@ import {
 import { useConversion, useCurrencies } from '../hooks';
 import { colors, radius } from '../theme';
 import { pickDefault } from '../utils';
+import { ConversionHistoryItem } from '../types';
+import HistoryItem from '../components/HistoryItem';
 
 export const CurrencyConverterScreen = () => {
   const { currencies, isLoading, error, retry } = useCurrencies();
@@ -22,6 +25,19 @@ export const CurrencyConverterScreen = () => {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [amount, setAmount] = useState('1');
+
+  const [history, setHistory] = useState<ConversionHistoryItem[]>([]);
+
+  const {
+    result,
+    converting,
+    error: convertError,
+  } = useConversion(from, to, amount);
+
+  const swap = () => {
+    setFrom(to);
+    setTo(from);
+  };
 
   useEffect(() => {
     if (currencies.length === 0 || from || to) return;
@@ -34,16 +50,21 @@ export const CurrencyConverterScreen = () => {
     setTo(pickedTo);
   }, [currencies, from, to]);
 
-  const {
-    result,
-    converting,
-    error: convertError,
-  } = useConversion(from, to, amount);
+  useEffect(() => {
+    if (!result) return;
 
-  const swap = () => {
-    setFrom(to);
-    setTo(from);
-  };
+    const historyItem: ConversionHistoryItem = {
+      id: `${result.timestamp}-${result.value}-${amount}`,
+      fromCurrency: from,
+      toCurrency: to,
+      fromAmount: amount,
+      result: result.value,
+    };
+
+    const newHistory = [historyItem, ...history].slice(0, 5);
+
+    setHistory(newHistory);
+  }, [result]);
 
   if (isLoading) {
     return (
@@ -88,11 +109,25 @@ export const CurrencyConverterScreen = () => {
       </View>
 
       <ConversionResult
-        result={result}
+        result={result?.value}
         converting={converting}
         error={convertError}
         toCode={to}
       />
+
+      <View>
+        <FlatList
+          data={history}
+          ListHeaderComponent={
+            <View style={styles.historyTitle}>
+              <Text>From</Text>
+              <Text>To</Text>
+            </View>
+          }
+          renderItem={({ item }) => <HistoryItem item={item} />}
+          keyExtractor={(item) => item.id}
+        />
+      </View>
     </View>
   );
 };
@@ -126,4 +161,8 @@ const styles = StyleSheet.create({
     borderRadius: radius,
   },
   retryText: { color: colors.primaryText, fontWeight: '700', fontSize: 15 },
+  historyTitle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
 });

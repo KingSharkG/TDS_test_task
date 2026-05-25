@@ -3,7 +3,7 @@ import { colors, radius } from '../theme';
 import { formatValue } from '../utils';
 
 interface ConversionResultProps {
-  result: number | null;
+  result?: number;
   converting: boolean;
   error: string | null;
   toCode: string;
@@ -23,7 +23,7 @@ export const ConversionResult = ({
         <ActivityIndicator color={colors.primary} style={styles.body} />
       ) : error ? (
         <Text style={[styles.body, styles.error]}>{error}</Text>
-      ) : result !== null ? (
+      ) : !!result ? (
         <Text style={styles.value}>
           {formatValue(result)} <Text style={styles.valueCode}>{toCode}</Text>
         </Text>

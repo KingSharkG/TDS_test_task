@@ -18,5 +18,14 @@ export interface ConvertResponse {
     to: string;
     amount: number;
     value: number;
+    timestamp: string;
   };
+}
+
+export interface ConversionHistoryItem {
+  id: string;
+  fromCurrency: string;
+  toCurrency: string;
+  fromAmount: string;
+  result: number;
 }

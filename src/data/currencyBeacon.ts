@@ -9,7 +9,7 @@ const client = axios.create({
   baseURL: API_URL,
 });
 
-const fetchData = async <T,>(
+const fetchData = async <T>(
   path: string,
   params: Record<string, string> = {},
 ): Promise<T> => {
@@ -47,12 +47,12 @@ export const convertCurrency = async (
   from: string,
   to: string,
   amount: number,
-): Promise<number> => {
+): Promise<ConvertResponse['response']> => {
   const data = await fetchData<ConvertResponse>('/convert', {
     from,
     to,
     amount: String(amount),
   });
 
-  return data.response.value;
+  return data.response;
 };

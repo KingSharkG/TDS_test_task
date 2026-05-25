@@ -3,7 +3,10 @@ import { convertCurrency } from '../data';
 import { useDebounce } from './useDebounce';
 
 interface UseConversionResult {
-  result: number | null;
+  result: {
+    value: number;
+    timestamp: string;
+  } | null;
   converting: boolean;
   error: string | null;
 }
@@ -15,7 +18,10 @@ export const useConversion = (
   to: string,
   amount: string,
 ): UseConversionResult => {
-  const [result, setResult] = useState<number | null>(null);
+  const [result, setResult] = useState<{
+    value: number;
+    timestamp: string;
+  } | null>(null);
   const [converting, setConverting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,8 +31,8 @@ export const useConversion = (
 
   const convert = async (isActive: () => boolean) => {
     try {
-      const value = await convertCurrency(from, to, numericAmount);
-      if (isActive()) setResult(value);
+      const response = await convertCurrency(from, to, numericAmount);
+      if (isActive()) setResult(response);
     } catch (e) {
       if (isActive()) {
         setResult(null);
